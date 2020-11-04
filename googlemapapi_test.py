@@ -5,6 +5,7 @@ from PIL import Image
 
 #gittestコメント
 #編集1
+#編集2
 
 class GooglePlaces(object):
     def __init__(self, apiKey):
