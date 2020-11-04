@@ -4,6 +4,7 @@ import time
 from PIL import Image
 
 #gittestコメント
+#編集1
 
 class GooglePlaces(object):
     def __init__(self, apiKey):
