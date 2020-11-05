@@ -16,7 +16,7 @@ class GooglePlaces(object):
         endpoint_url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
         places = []
         params = {
-            'keyword' : 'ネロ',
+            #'keyword' : '',
             'location': location,
             'radius': radius,
             'types': types,
@@ -75,7 +75,9 @@ class GooglePlaces(object):
 if __name__ == '__main__':
     api = GooglePlaces("AIzaSyBQ_HzKvpdKet-T7W5o45Ozsry4clhz-6w")
     places = api.search_places_by_coordinate("35.291490, 136.799220", "300", "restaurant")
-    fields = ['name', 'formatted_address', 'international_phone_number', 'website', 'rating', 'review', 'photos', 'opening_hours', 'rating']
+    fields = ['name', 'formatted_address', 'international_phone_number', 'website', 'rating', 'review', 'photos', 'opening_hours', 'rating', 'types', 'icon', 'address_components'] 
+    score = {}
+    
     for place in places:
         details = api.get_place_details(place['place_id'], fields)
         try:
@@ -115,12 +117,35 @@ if __name__ == '__main__':
         try:
             rating = float(details['result']['rating'])
         except KeyError:
-            rating = []
+            rating = 0
 
         try:
             distance_time = api.get_place_distance_time("35.291490, 136.799220", place['place_id'])
         except KeyError:
             distance_time = []
+
+        try:
+            place_types = details['result']['types']
+        except KeyError:
+            place_types = []
+
+        score_temp = (rating - 1) / 4.0 + (float(15 * 60) - distance_time["rows"][0]['elements'][0]['duration']['value']) / float(15*60)
+
+        score.update({name : score_temp})
+         
+        """
+        try:
+            address_component = details['result']['address_components']
+        except KeyError:
+            place_types = []
+        """
+        """
+        try:
+            icon = details['result']['icon']
+        except KeyError:
+            icon = []
+        """
+            
         """
         if not 'photos' in details['result']:
             photo = get_place_img(details['result']['photos'])
@@ -132,16 +157,22 @@ if __name__ == '__main__':
         print("Website:", website)
         print("Address:", address)
         print("Phone Number", phone_number)
+        """
         if opening_hours['open_now'] == True and rating > 4.0:
             print("Open now!")
         elif opening_hours['open_now'] == False:
             print("close")
+        """
         print(type(opening_hours))
         print("rating", rating)
         print("-------distance_time-------")
         #type(distance_time["rows"][0]['elements'][0]['distance']['text'])
         print("距離：{}".format(distance_time["rows"][0]['elements'][0]['distance']['text']))
         print("時間：{}".format(distance_time["rows"][0]['elements'][0]['duration']['text']))
+        print("score : {}".format(score_temp))
+        #print("type")
+        #print(type(place_types))
+        #print(place_types)
         #print("距離：{}, 時間:{}".format(distance_time["rows"]["distance"]["text"], distance_time["rows"]["duration"]["text"]))
         #print("photos", photos)
         """
@@ -171,3 +202,9 @@ if __name__ == '__main__':
         """
         #print(img)
         print("-----------------------------------------")
+    score = sorted(score.items(), key=lambda x:x[1], reverse=True)
+    restaurant_list=[]
+    print(len(score))
+    for i in range(len(score)):
+        restaurant_list.append(score[i][0])
+    print(restaurant_list)
